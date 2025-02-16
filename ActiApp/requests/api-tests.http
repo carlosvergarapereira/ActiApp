@@ -1,0 +1,11 @@
+### Registrar un nuevo usuario
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Carlos Vergara",
+  "email": "carlos@example.com",
+  "password": "password123",
+  "role": "admin_general",
+  "organizationId": "1234567890"
+}
