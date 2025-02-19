@@ -4,6 +4,12 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
+
+// Importar rutas
+const authRoutes = require("./routes/authRoutes");
+const orgRoutes = require("./routes/orgRoutes");
+const activityRoutes = require("./routes/activityRoutes");
+
 dotenv.config();
 
 const app = express();
@@ -17,9 +23,9 @@ app.use(express.json());
 connectDB();
 
 // Rutas
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/org', require('./routes/orgRoutes'));
-app.use('/api/activity', require('./routes/activityRoutes'));
+app.use("/api/auth", authRoutes);
+//app.use("/api/org", orgRoutes);
+//app.use("/api/activity", activityRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
