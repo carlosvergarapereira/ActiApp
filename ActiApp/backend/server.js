@@ -24,7 +24,7 @@ connectDB();
 
 // Rutas
 app.use("/api/auth", authRoutes);
-app.use("/api/org", orgRoutes);
+app.use("/api/organizations", orgRoutes);
 app.use("/api/activity", activityRoutes);
 
 // Iniciar servidor

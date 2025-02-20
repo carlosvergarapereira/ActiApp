@@ -1,32 +1,29 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useContext } from 'react';
+import { View, TextInput, Button, Alert, ActivityIndicator } from 'react-native';
+import { AuthContext } from '../context/AuthContext'; // Importa el contexto
+import fetchApi from '../utils/api'; // Importa la función fetchApi
 
-const LoginScreen = ({ navigation }) => { // Recibe el objeto navigation
+const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Estado de carga
+  const { login } = useContext(AuthContext); // Obtén la función login del contexto
 
   const handleLogin = async () => {
+    setLoading(true); // Indica que la carga ha comenzado
     try {
-      const response = await fetch('/api/auth/login', {
+      const data = await fetchApi('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        await AsyncStorage.setItem('token', data.token);
-        navigation.navigate('Home'); // Navega a la pantalla Home
-      } else {
-        Alert.alert('Error', data.message); // Muestra un mensaje de error
-      }
+      await login(data.token); // Guarda el token y la info del usuario en el contexto
+      navigation.navigate('Home');
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Hubo un problema al iniciar sesión');
+      console.error('Error logging in:', error);
+      Alert.alert('Error', error.message || 'Hubo un problema al iniciar sesión'); // Muestra el mensaje de error del backend o uno genérico
+    } finally {
+      setLoading(false); // Indica que la carga ha terminado
     }
   };
 
@@ -34,7 +31,8 @@ const LoginScreen = ({ navigation }) => { // Recibe el objeto navigation
     <View>
       <TextInput placeholder="Usuario" onChangeText={setUsername} />
       <TextInput placeholder="Contraseña" onChangeText={setPassword} secureTextEntry />
-      <Button title="Iniciar sesión" onPress={handleLogin} />
+      <Button title="Iniciar sesión" onPress={handleLogin} disabled={loading} /> {/* Deshabilita el botón mientras carga */}
+      {loading && <ActivityIndicator />} {/* Muestra el indicador de carga si loading es true */}
     </View>
   );
 };
