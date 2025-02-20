@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Organization = require('../models/Organization'); // Importa el modelo
+const authMiddleware = require('../middleware/authMiddleware'); // Middleware de autenticación
 
 // GET - Obtener todas las organizaciones
 router.get('/', async (req, res) => {
@@ -25,14 +26,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST - Crear una nueva organización
-router.post('/', async (req, res) => {
-  const organization = new Organization(req.body);
+// Crear organización (solo admin general)
+router.post('/', authMiddleware, async (req, res) => {
   try {
-    const newOrganization = await organization.save();
+    const { name, type } = req.body;
+
+    // Verifica si el usuario es admin general (implementa esta lógica en authMiddleware)
+
+    const newOrganization = new Organization({ name, type });
+    await newOrganization.save();
     res.status(201).json(newOrganization);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 

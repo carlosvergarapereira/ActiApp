@@ -25,7 +25,7 @@ connectDB();
 // Rutas
 app.use("/api/auth", authRoutes);
 app.use("/api/org", orgRoutes);
-//app.use("/api/activity", activityRoutes);
+app.use("/api/activity", activityRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
