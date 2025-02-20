@@ -1,40 +1,102 @@
-import React, { useState, useContext } from 'react';
-import { View, TextInput, Button, Alert, ActivityIndicator } from 'react-native';
-import { AuthContext } from '../context/AuthContext'; // Importa el contexto
-import fetchApi from '../utils/api'; // Importa la función fetchApi
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { login } from '../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); // Estado de carga
-  const { login } = useContext(AuthContext); // Obtén la función login del contexto
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    setLoading(true); // Indica que la carga ha comenzado
-    try {
-      const data = await fetchApi('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      });
-
-      await login(data.token); // Guarda el token y la info del usuario en el contexto
-      navigation.navigate('Home');
-    } catch (error) {
-      console.error('Error logging in:', error);
-      Alert.alert('Error', error.message || 'Hubo un problema al iniciar sesión'); // Muestra el mensaje de error del backend o uno genérico
-    } finally {
-      setLoading(false); // Indica que la carga ha terminado
+    if (!username || !password) {
+      Alert.alert("Error", "Por favor, ingresa usuario y contraseña.");
+      return;
     }
+
+    setLoading(true);
+    try {
+      const data = await login(username, password);
+      await AsyncStorage.setItem('token', data.token);
+      Alert.alert("Éxito", "Inicio de sesión exitoso");
+      navigation.replace('Home'); // Redirige a la pantalla principal
+    } catch (error) {
+      Alert.alert("Error", error);
+    }
+    setLoading(false);
   };
 
   return (
-    <View>
-      <TextInput placeholder="Usuario" onChangeText={setUsername} />
-      <TextInput placeholder="Contraseña" onChangeText={setPassword} secureTextEntry />
-      <Button title="Iniciar sesión" onPress={handleLogin} disabled={loading} /> {/* Deshabilita el botón mientras carga */}
-      {loading && <ActivityIndicator />} {/* Muestra el indicador de carga si loading es true */}
+    <View style={styles.container}>
+      <Text style={styles.title}>Bienvenido 👋</Text>
+      <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre de usuario"
+        placeholderTextColor="#999"
+        value={username}
+        onChangeText={setUsername}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Contraseña"
+        placeholderTextColor="#999"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? "Cargando..." : "Iniciar Sesión"}</Text>
+      </TouchableOpacity>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#7F8C8D',
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    height: 50,
+    borderColor: '#3498DB',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  button: {
+    backgroundColor: '#F39C12',
+    paddingVertical: 12,
+    borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});
 
 export default LoginScreen;

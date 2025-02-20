@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const authMiddleware = require('../middleware/authMiddleware');
 
+const SECRET_KEY = process.env.JWT_SECRET || 'secreto'; // Usar variable de entorno
+
 // 📌 Middleware para verificar si es Admin General
 const isAdminGeneral = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin_general') {
@@ -15,16 +17,14 @@ const isAdminGeneral = (req, res, next) => {
   next();
 };
 
-// 📌 REGISTRO DE USUARIO
+// 🔹 Registro de usuario (permite primer admin sin autenticación)
 router.post(
   '/register',
   [
     body('username').notEmpty().withMessage('El nombre de usuario es requerido'),
     body('firstName').notEmpty().withMessage('El primer nombre es requerido'),
-    body('middleName').optional(), // No obligatorio
     body('lastName').notEmpty().withMessage('El primer apellido es requerido'),
-    body('secondLastName').optional(), // No obligatorio
-    body('email').isEmail().withMessage('El email es inválido'),
+    body('email').isEmail().withMessage('El correo no es válido'),
     body('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
     body('role').isIn(['admin_general', 'admin_org', 'user']).withMessage('Rol inválido'),
     body('organizationId').optional().isMongoId().withMessage('ID de organización inválido'),
@@ -35,12 +35,13 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, firstName, middleName, lastName, secondLastName, email, password, role, organizationId } = req.body;
-
     try {
-      let userExists = await User.findOne({ $or: [{ email }, { username }] });
-      if (userExists) {
-        return res.status(400).json({ message: 'El usuario o email ya están en uso' });
+      const { username, firstName, middleName, lastName, secondLastName, email, password, role, organizationId } = req.body;
+
+      const existingUsers = await User.countDocuments();
+
+      if (existingUsers > 0 && role === 'admin_general' && !req.user) {
+        return res.status(403).json({ message: 'No puedes crear más administradores generales sin autenticación' });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -58,15 +59,15 @@ router.post(
       });
 
       await newUser.save();
-      res.status(201).json({ message: 'Usuario registrado correctamente' });
+
+      res.status(201).json({ message: 'Usuario registrado correctamente', userId: newUser._id });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error del servidor' });
+      res.status(500).json({ message: error.message });
     }
   }
 );
 
-// 📌 LOGIN DE USUARIO
+// 📌 Login de usuario
 router.post(
   '/login',
   [
@@ -92,9 +93,8 @@ router.post(
         return res.status(401).json({ message: 'Credenciales inválidas' });
       }
 
-      // Generar Token JWT
       const payload = { id: user._id, role: user.role };
-      const token = jwt.sign(payload, 'secreto', { expiresIn: '1h' });
+      const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
 
       res.json({ token });
     } catch (error) {
@@ -104,7 +104,7 @@ router.post(
   }
 );
 
-// 📌 CREAR ORGANIZACIÓN + USUARIO ADMIN
+// 📌 Crear organización + usuario admin
 router.post(
   '/create-organization',
   authMiddleware,
@@ -127,20 +127,16 @@ router.post(
     try {
       const { name, type, adminUsername, adminFirstName, adminMiddleName, adminLastName, adminSecondLastName, adminEmail, adminPassword } = req.body;
 
-      // 1️⃣ Verificar que el usuario admin no exista
       let existingUser = await User.findOne({ $or: [{ username: adminUsername }, { email: adminEmail }] });
       if (existingUser) {
         return res.status(400).json({ message: 'El usuario admin ya existe' });
       }
 
-      // 2️⃣ Crear la organización
       const newOrganization = new Organization({ name, type });
       await newOrganization.save();
 
-      // 3️⃣ Hashear la contraseña del admin
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-      // 4️⃣ Crear el usuario admin
       const newAdmin = new User({
         username: adminUsername,
         firstName: adminFirstName,

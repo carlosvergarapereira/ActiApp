@@ -1,8 +1,17 @@
 import React from 'react';
-import AppNavigator from './src/navigation/AppNavigator';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import LoginScreen from './screens/LoginScreen';
 
-const App = () => {
-  return <AppNavigator />;
-};
+const Stack = createStackNavigator();
 
-export default App;
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        {/* Aquí puedes agregar otras pantallas como "Home" */}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
