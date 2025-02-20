@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const authMiddleware = require('./middleware/authMiddleware'); // Importa el middleware
 
 
 // Importar rutas

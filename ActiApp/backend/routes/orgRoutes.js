@@ -40,7 +40,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // Crear organización (solo admin general)
 router.post(
   '/',
-  authMiddleware,
+  //sauthMiddleware,
   isAdminGeneral, // Usa el middleware isAdminGeneral
   [
     body('name').notEmpty().withMessage('El nombre es requerido'),
