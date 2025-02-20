@@ -6,16 +6,15 @@ const { body, validationResult } = require('express-validator');
 
 // Middleware para verificar rol de admin general
 const isAdminGeneral = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
     return res.status(403).json({ message: 'No tienes permiso para esta acción' });
   }
-  next();
 };
 
 // Obtener todas las organizaciones (cualquier usuario autenticado)
-router.get('/', 
-  //authMiddleware, 
-  async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const organizations = await Organization.find();
     res.json(organizations);
@@ -37,7 +36,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Crear organización (solo admin general)
+// Crear organización (solo admin general) - MODIFICACIÓN TEMPORAL
 router.post(
   '/',
   /* authMiddleware,  <--- COMENTA ESTA LÍNEA TEMPORALMENTE */
@@ -67,7 +66,7 @@ router.post(
 router.patch(
   '/:id',
   authMiddleware,
-  isAdminGeneral, // Usa el middleware isAdminGeneral
+  isAdminGeneral,
   [
     body('name').notEmpty().withMessage('El nombre es requerido'),
     body('type').notEmpty().withMessage('El tipo es requerido'),
@@ -99,7 +98,7 @@ router.patch(
 router.delete(
   '/:id',
   authMiddleware,
-  isAdminGeneral, // Usa el middleware isAdminGeneral
+  isAdminGeneral,
   async (req, res) => {
     try {
       const deletedOrganization = await Organization.findByIdAndDelete(req.params.id);
