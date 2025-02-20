@@ -18,17 +18,17 @@ app.use(cors());
 app.use(express.json());
 
 // Middleware de autenticación (¡DEBE IR PRIMERO!)
-app.use(authMiddleware); // Aplica el middleware de autenticación a TODAS las rutas siguientes
+app.use(authMiddleware); // 🔒 Ahora todas las rutas requieren autenticación
 
 // Importar rutas (DESPUÉS del middleware de autenticación)
 const authRoutes = require("./routes/authRoutes");
 const orgRoutes = require("./routes/orgRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 
-// Rutas (ahora protegidas por el middleware de autenticación)
-app.use("/api/auth", authRoutes); // Aunque authRoutes no necesita autenticación, se deja por consistencia.
+// Rutas protegidas
+app.use("/api/auth", authRoutes);
 app.use("/api/organizations", orgRoutes);
-app.use("/api/activities", activityRoutes); // Corregido: /api/activity a /api/activities
+app.use("/api/activities", activityRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
