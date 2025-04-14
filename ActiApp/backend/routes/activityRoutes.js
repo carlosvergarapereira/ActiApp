@@ -64,41 +64,40 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Actualizar actividad (solo el usuario que la creó o el admin de la organización)
 router.patch(
   '/:id',
   authMiddleware,
-  [
-    body('title').notEmpty().withMessage('El título es requerido'),
-    body('category').notEmpty().withMessage('La categoría es requerida'),
-    body('subcategory').notEmpty().withMessage('La subcategoría es requerida'),
-  ],
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     try {
-      const { title, category, subcategory } = req.body;
       const activity = await Activity.findById(req.params.id);
 
       if (!activity) {
         return res.status(404).json({ message: 'Actividad no encontrada' });
       }
 
-      // Verifica si el usuario es el creador de la actividad o el admin de la organización
+      // Validación de permisos
       if (activity.user.toString() !== req.user._id && req.user.role !== 'orgAdmin' && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'No tienes permiso para actualizar esta actividad' });
       }
 
+      // Solo actualizar los campos enviados
+      const updateFields = {};
+      const { title, category, subcategory, startTime, endTime } = req.body;
+      if (title) updateFields.title = title;
+      if (category) updateFields.category = category;
+      if (subcategory) updateFields.subcategory = subcategory;
+      if (startTime !== undefined) updateFields.startTime = startTime;
+      if (endTime !== undefined) updateFields.endTime = endTime;
+
       const updatedActivity = await Activity.findByIdAndUpdate(
         req.params.id,
-        { title, category, subcategory },
+        updateFields,
         { new: true }
       );
+
       res.json(updatedActivity);
     } catch (error) {
+      console.error(error);
       res.status(500).json({ message: error.message });
     }
   }

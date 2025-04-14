@@ -11,18 +11,24 @@ const HomeScreen = () => {
   const fetchActivities = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
+      console.log("🔐 TOKEN:", token); // <--- DEBUG
       if (!token) {
         Alert.alert('Error', 'No hay token de sesión');
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/activities', {
+      const response = await fetch('http://10.0.2.2:5000/api/activities', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          Alert.alert("Sesión expirada", "Por favor inicia sesión nuevamente.");
+          await AsyncStorage.removeItem('token');
+          navigation.replace('Login');
+        }
         throw new Error('Error al obtener actividades');
       }
 

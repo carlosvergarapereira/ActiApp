@@ -9,9 +9,9 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: 'No hay token, autorización denegada' });
     }
 
-    const decoded = jwt.verify(token, 'secreto'); // Verifica el token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifica el token
 
-    req.user = await User.findById(decoded.id); // Obtén el usuario desde la base de datos
+    req.user = await User.findById(decoded.userId); // Obtén el usuario desde la base de datos
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token no válido' });
