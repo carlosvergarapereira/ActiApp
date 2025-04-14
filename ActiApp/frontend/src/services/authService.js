@@ -1,18 +1,18 @@
-// frontend/src/services/authService.js
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000/api/auth';
+
 export const login = async (username, password) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (username === 'admin' && password === '1234') {
-        resolve({
-          token: 'fake-jwt-token',
-          user: {
-            username: 'admin',
-            email: 'admin@fake.com'
-          }
-        });
-      } else {
-        reject('Credenciales inválidas');
-      }
-    }, 1000);
-  });
+  try {
+    const response = await axios.post(`${API_URL}/login`, {
+      username,
+      password
+    });
+
+    // Esperamos que el backend devuelva { token, user }
+    return response.data;
+  } catch (error) {
+    const message = error.response?.data?.error || 'Error al iniciar sesión';
+    throw new Error(message);
+  }
 };

@@ -19,12 +19,22 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
     try {
       const data = await login(username, password);
+      console.log("🔐 Login Response:", data);
+
+      if (!data.token || !data.user) {
+        throw new Error('Respuesta del servidor incompleta');
+      }
+
       await AsyncStorage.setItem('token', data.token);
+      console.log("📦 Token guardado:", data.token);
+      console.log("👤 Usuario:", data.user);
+
       setUser(data.user);
       Alert.alert("Éxito", "Inicio de sesión exitoso");
       navigation.replace('Home'); // Redirige a la pantalla principal
     } catch (error) {
-      Alert.alert("Error", error);
+      console.error("❌ Error en login:", error);
+      Alert.alert("Error", error.message || "Credenciales inválidas");
     }
     setLoading(false);
   };
@@ -53,6 +63,10 @@ const LoginScreen = ({ navigation }) => {
 
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? "Cargando..." : "Iniciar Sesión"}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={{ marginTop: 20, color: '#2980b9' }}>¿No tienes cuenta? Regístrate</Text>
       </TouchableOpacity>
     </View>
   );

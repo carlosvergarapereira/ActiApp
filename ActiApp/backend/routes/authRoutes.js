@@ -67,42 +67,18 @@ router.post(
   }
 );
 
-// 📌 Login de usuario
+const authController = require('../controllers/authController');
+
+// 📌 Login de usuario (usando controlador)
 router.post(
   '/login',
   [
     body('username').notEmpty().withMessage('El nombre de usuario es requerido'),
     body('password').notEmpty().withMessage('La contraseña es requerida'),
   ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { username, password } = req.body;
-
-    try {
-      const user = await User.findOne({ username });
-      if (!user) {
-        return res.status(401).json({ message: 'Credenciales inválidas' });
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Credenciales inválidas' });
-      }
-
-      const payload = { id: user._id, role: user.role };
-      const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
-
-      res.json({ token });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error del servidor' });
-    }
-  }
+  authController.login
 );
+
 
 // 📌 Crear organización + usuario admin
 router.post(

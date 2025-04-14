@@ -18,8 +18,8 @@ const isAdminGeneral = (req, res, next) => {
   }
 };
 
-// Obtener todas las organizaciones (cualquier usuario autenticado)
-router.get('/', authMiddleware, async (req, res) => {
+// Obtener todas las organizaciones (público)
+router.get('/', async (req, res) => {
   try {
     const organizations = await Organization.find();
     res.json(organizations);

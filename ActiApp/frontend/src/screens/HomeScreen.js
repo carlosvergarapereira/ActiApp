@@ -1,45 +1,87 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Alert } from 'react-native';
-import fetchApi from '../utils/api';
+import { View, Text, FlatList, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = () => {
+  const { user } = useContext(AuthContext);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useContext(AuthContext); // Obtén el usuario del contexto
+
+  const fetchActivities = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Error', 'No hay token de sesión');
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/activities', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener actividades');
+      }
+
+      const data = await response.json();
+      setActivities(data);
+    } catch (error) {
+      console.error('Error al obtener actividades:', error.message);
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        const data = await fetchApi('/api/activities');
-        setActivities(data);
-      } catch (error) {
-        console.error('Error fetching activities:', error);
-        Alert.alert('Error', 'No se pudieron cargar las actividades.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchActivities();
   }, []);
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={{
+        padding: 15,
+        backgroundColor: '#f1f1f1',
+        marginVertical: 5,
+        borderRadius: 8,
+      }}
+    >
+      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.title}</Text>
+      <Text style={{ color: '#555' }}>{item.category} > {item.subcategory}</Text>
+      {item.startTime && (
+        <Text style={{ fontSize: 12, color: 'green' }}>
+          Inicio: {new Date(item.startTime).toLocaleString()}
+        </Text>
+      )}
+      {item.endTime && (
+        <Text style={{ fontSize: 12, color: 'red' }}>
+          Fin: {new Date(item.endTime).toLocaleString()}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
 
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#007bff" />
+        <Text>Cargando actividades...</Text>
       </View>
     );
   }
 
   return (
-    <View>
-      {/* Muestra información del usuario */}
-      <Text>Bienvenido, {user?.username}</Text>
+    <View style={{ padding: 20, flex: 1 }}>
+      <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>
+        Bienvenido, {user?.firstName} ({user?.role})
+      </Text>
       <FlatList
         data={activities}
-        renderItem={({ item }) => <Text>{item.title}</Text>}
         keyExtractor={(item) => item._id}
+        renderItem={renderItem}
       />
     </View>
   );
