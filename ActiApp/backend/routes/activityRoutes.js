@@ -75,9 +75,9 @@ router.patch(
         return res.status(404).json({ message: 'Actividad no encontrada' });
       }
 
-      // Validación de permisos
-      if (activity.user.toString() !== req.user._id && req.user.role !== 'orgAdmin' && req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'No tienes permiso para actualizar esta actividad' });
+      // Verificar que el usuario sea el dueño de la actividad
+      if (!activity.user.equals(req.user._id)) {
+        return res.status(403).json({ message: 'Solo puedes modificar tus propias actividades' });
       }
 
       // Solo actualizar los campos enviados
@@ -116,8 +116,8 @@ router.delete(
       }
 
       // Verifica si el usuario es el creador de la actividad o el admin de la organización
-      if (activity.user.toString() !== req.user._id && req.user.role !== 'orgAdmin' && req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'No tienes permiso para eliminar esta actividad' });
+      if (activity.user.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'Solo puedes eliminar tus propias actividades' });
       }
 
       await Activity.findByIdAndDelete(req.params.id);

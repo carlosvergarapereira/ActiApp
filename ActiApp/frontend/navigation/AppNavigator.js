@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ActivitiesScreen from './screens/ActivitiesScreen';
+import HistoryScreen from '../screens/HistoryScreen';
 import CreateOrganizationScreen from '../screens/CreateOrganizationScreen'; // Importa la pantalla
 import CreateActivityScreen from '../screens/CreateActivityScreen'; // Importa la pantalla
 import { AuthContext } from '../context/AuthContext'; // Importa el contexto de autenticación
@@ -27,6 +28,7 @@ const AppNavigator = () => {
             <Stack.Screen name="CreateOrganization" component={CreateOrganizationScreen} />
             <Stack.Screen name="CreateActivity" component={CreateActivityScreen} />
             <Stack.Screen name="Activities" component={ActivitiesScreen} />
+            <Stack.Screen name="History" component={HistoryScreen} />
             {/* ... otras pantallas protegidas */}
           </>
         ) : ( // Si no hay un usuario autenticado
