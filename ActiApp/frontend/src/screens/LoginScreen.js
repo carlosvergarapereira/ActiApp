@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { login } from '../services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../context/AuthContext'; 
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -18,6 +19,7 @@ const LoginScreen = ({ navigation }) => {
     try {
       const data = await login(username, password);
       await AsyncStorage.setItem('token', data.token);
+      setUser(data.user);
       Alert.alert("Éxito", "Inicio de sesión exitoso");
       navigation.replace('Home'); // Redirige a la pantalla principal
     } catch (error) {
