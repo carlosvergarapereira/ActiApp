@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Alert, TouchableOpacity, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
 
-const HomeScreen = () => {
+const getBaseUrl = () => {
+  return Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
+};
+
+const HomeScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,13 +15,15 @@ const HomeScreen = () => {
   const fetchActivities = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      console.log("🔐 TOKEN:", token); // <--- DEBUG
+      console.log("🔐 TOKEN:", token);
+
       if (!token) {
         Alert.alert('Error', 'No hay token de sesión');
+        navigation.replace('Login');
         return;
       }
 
-      const response = await fetch('http://10.0.2.2:5000/api/activities', {
+      const response = await fetch(`${getBaseUrl()}/api/activities`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

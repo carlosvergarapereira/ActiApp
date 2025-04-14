@@ -1,3 +1,4 @@
+require('dotenv').config(); // Asegura que lo estás cargando
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 

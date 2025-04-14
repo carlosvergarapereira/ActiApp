@@ -51,7 +51,7 @@ router.post(
 router.get('/', authMiddleware, async (req, res) => {
   try {
     let activities;
-    if (req.user.role === 'admin' || req.user.role === 'orgAdmin') {
+    if (req.user.role === 'admin_general' || req.user.role === 'admin_org') {
       // Si es admin, obtiene todas las actividades de su organización
       activities = await Activity.find({ organization: req.user.organization });
     } else {
