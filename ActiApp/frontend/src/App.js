@@ -1,21 +1,21 @@
 import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { AuthProvider, AuthContext } from './context/AuthContext'; // importa AuthContext también
+import { AuthProvider, AuthContext } from './context/AuthContext';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import ConfigScreen from './screens/ConfigScreen';
-import SplashScreen from './screens/SplashScreen'; // ⚡ Asegúrate que tienes este archivo creado
+import SplashScreen from './screens/SplashScreen';
 
 const Stack = createStackNavigator();
 
-function MainNavigator() {
+function AppNavigator() {
   const { user, loadingAuth } = useContext(AuthContext);
 
   if (loadingAuth) {
-    return <SplashScreen />; // 🔥 Muestra pantalla de carga
+    return <SplashScreen />;
   }
 
   return (
@@ -40,7 +40,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NavigationContainer>
-        <MainNavigator />
+        <AppNavigator />
       </NavigationContainer>
     </AuthProvider>
   );
