@@ -17,6 +17,17 @@ const isAdminGeneral = (req, res, next) => {
   next();
 };
 
+// Obtener usuario actual
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error obteniendo usuario' });
+  }
+});
+
+
 // 🔹 Registro de usuario (permite primer admin sin autenticación)
 router.post(
   '/register',

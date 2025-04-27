@@ -9,7 +9,7 @@ import { Platform } from 'react-native';
 const getBaseUrl = () => Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
 
 const HomeScreen = ({ navigation }) => {
-  const { user, setUser } = useContext(AuthContext);
+  const { user, loadingAuth, setUser } = useContext(AuthContext);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeActivityId, setActiveActivityId] = useState(null);
@@ -19,17 +19,25 @@ const HomeScreen = ({ navigation }) => {
 
   const fetchActivities = async () => {
     try {
+      if (!user || !user._id) {
+        console.log('🔴 Usuario aún no cargado');
+        return;
+      }
+
       const token = await AsyncStorage.getItem('token');
       const res = await fetch(`${getBaseUrl()}/api/activities`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
 
-      // 🔥 Filtrar actividades por organización
-      const orgActivities = data.filter(act => String(act.organization) === String(user.organizationId));
-      setActivities(orgActivities);
+      const filteredActivities = data.filter(act =>
+        (String(act.organization) === String(user.organizationId) && act.user === null) || 
+        (String(act.user) === String(user._id))
+      );
 
-      const current = orgActivities.find(a => a.startTime && !a.endTime);
+      setActivities(filteredActivities);
+
+      const current = filteredActivities.find(a => a.startTime && !a.endTime);
       if (current) {
         setActiveActivityId(current._id);
         setStartTime(new Date(current.startTime));
@@ -39,7 +47,7 @@ const HomeScreen = ({ navigation }) => {
         clearTimer();
       }
     } catch (err) {
-      Alert.alert('Error', err.message);
+      Alert.alert('Error cargando actividades', err.message);
     } finally {
       setLoading(false);
     }
@@ -115,9 +123,11 @@ const HomeScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchActivities();
+    if (!loadingAuth) {
+      fetchActivities();
+    }
     return clearTimer;
-  }, []);
+  }, [loadingAuth]);
 
   const renderItem = ({ item }) => {
     const isActive = item._id === activeActivityId;

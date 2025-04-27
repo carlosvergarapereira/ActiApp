@@ -4,13 +4,14 @@ const Activity = require('../models/Activity');
 const authMiddleware = require('../middleware/authMiddleware');
 const { body, validationResult } = require('express-validator');
 
+// Crear actividad
 router.post(
   '/',
   authMiddleware,
   [
     body('title').notEmpty().withMessage('El título es requerido'),
     body('category').notEmpty().withMessage('La categoría es requerida'),
-    body('subcategory').notEmpty().withMessage('La subcategoría es requerida'),
+    body('subcategory').notEmpty().withMessage('La subcategoría es requerida')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -20,15 +21,28 @@ router.post(
 
     try {
       const { title, category, subcategory } = req.body;
-      const user = req.user._id;
+      let newActivity;
 
-      const newActivity = new Activity({
-        title,
-        category,
-        subcategory,
-        user,
-        organization: req.user.organizationId, // Solo de tu sesión 🔥
-      });
+      if (req.user.role === 'admin_org') {
+        // Admin org crea actividades para su organización
+        newActivity = new Activity({
+          title,
+          category,
+          subcategory,
+          organization: req.user.organizationId,
+          user: null
+        });
+      } else {
+        // Usuario normal crea solo para sí mismo
+        newActivity = new Activity({
+          title,
+          category,
+          subcategory,
+          user: req.user._id,
+          organization: req.user.organizationId
+        });
+      }
+
       await newActivity.save();
       res.status(201).json(newActivity);
     } catch (error) {
@@ -37,15 +51,18 @@ router.post(
   }
 );
 
+// Obtener actividades
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const userOrg = req.user.organizationId;
+    const orgId = req.user.organizationId;
+    const userId = req.user._id;
 
-    if (!userOrg) {
-      return res.status(400).json({ message: 'Usuario sin organización' });
-    }
-
-    const activities = await Activity.find({ organization: userOrg });
+    const activities = await Activity.find({
+      $or: [
+        { organization: orgId, user: null }, // asignadas por org
+        { user: userId } // propias
+      ]
+    });
 
     res.json(activities);
   } catch (error) {
@@ -53,6 +70,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// Actualizar actividad
 router.patch('/:id', authMiddleware, async (req, res) => {
   try {
     const activity = await Activity.findById(req.params.id);
@@ -61,31 +79,26 @@ router.patch('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Actividad no encontrada' });
     }
 
-    if (!activity.user.equals(req.user._id)) {
-      return res.status(403).json({ message: 'No tienes permiso para modificar esta actividad' });
+    // Solo el dueño puede editar
+    if (activity.user?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'No puedes editar actividades asignadas' });
     }
 
-    const updateFields = {};
     const { title, category, subcategory, startTime, endTime } = req.body;
-    if (title) updateFields.title = title;
-    if (category) updateFields.category = category;
-    if (subcategory) updateFields.subcategory = subcategory;
-    if (startTime !== undefined) updateFields.startTime = startTime;
-    if (endTime !== undefined) updateFields.endTime = endTime;
+    if (title) activity.title = title;
+    if (category) activity.category = category;
+    if (subcategory) activity.subcategory = subcategory;
+    if (startTime !== undefined) activity.startTime = startTime;
+    if (endTime !== undefined) activity.endTime = endTime;
 
-    const updatedActivity = await Activity.findByIdAndUpdate(
-      req.params.id,
-      updateFields,
-      { new: true }
-    );
-
-    res.json(updatedActivity);
+    const updated = await activity.save();
+    res.json(updated);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: error.message });
   }
 });
 
+// Eliminar actividad
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const activity = await Activity.findById(req.params.id);
@@ -94,11 +107,11 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Actividad no encontrada' });
     }
 
-    if (!activity.user.equals(req.user._id)) {
-      return res.status(403).json({ message: 'No tienes permiso para eliminar esta actividad' });
+    if (activity.user?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'No puedes eliminar actividades asignadas' });
     }
 
-    await Activity.findByIdAndDelete(req.params.id);
+    await activity.deleteOne();
     res.json({ message: 'Actividad eliminada' });
   } catch (error) {
     res.status(500).json({ message: error.message });

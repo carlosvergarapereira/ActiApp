@@ -24,10 +24,7 @@ const ConfigScreen = ({ navigation }) => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...newActivity,
-          organization: user.organizationId || null
-        })
+        body: JSON.stringify(newActivity)
       });
 
       if (!res.ok) {
@@ -97,10 +94,7 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-  backButton: {
-    marginTop: 20,
-    alignItems: 'center'
-  },
+  backButton: { marginTop: 20, alignItems: 'center' },
   backButtonText: { color: '#e74c3c', fontWeight: 'bold', fontSize: 16 }
 });
 
