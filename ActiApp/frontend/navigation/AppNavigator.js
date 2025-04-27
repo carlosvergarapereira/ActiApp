@@ -4,34 +4,27 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
-import ActivitiesScreen from './screens/ActivitiesScreen';
 import HistoryScreen from '../screens/HistoryScreen';
-import CreateOrganizationScreen from '../screens/CreateOrganizationScreen'; // Importa la pantalla
-import CreateActivityScreen from '../screens/CreateActivityScreen'; // Importa la pantalla
-import { AuthContext } from '../context/AuthContext'; // Importa el contexto de autenticación
+import ConfigScreen from '../screens/ConfigScreen'; // Tu pantalla de configuración
+import { AuthContext } from '../context/AuthContext';
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
-  const { user, loading } = useContext(AuthContext); // Obtén el usuario y el estado de carga
+  const { user, loading } = useContext(AuthContext);
 
-  if (loading) {
-    return null; // O un componente de carga mientras se verifica el token
-  }
+  if (loading) return null;
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        {user ? ( // Si hay un usuario autenticado
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {user ? (
           <>
             <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="CreateOrganization" component={CreateOrganizationScreen} />
-            <Stack.Screen name="CreateActivity" component={CreateActivityScreen} />
-            <Stack.Screen name="Activities" component={ActivitiesScreen} />
             <Stack.Screen name="History" component={HistoryScreen} />
-            {/* ... otras pantallas protegidas */}
+            <Stack.Screen name="Config" component={ConfigScreen} />
           </>
-        ) : ( // Si no hay un usuario autenticado
+        ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
         )}
       </Stack.Navigator>
