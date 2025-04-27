@@ -24,9 +24,12 @@ const HomeScreen = ({ navigation }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      setActivities(data);
 
-      const current = data.find(a => a.startTime && !a.endTime);
+      // 🔥 Filtrar actividades por organización
+      const orgActivities = data.filter(act => String(act.organization) === String(user.organizationId));
+      setActivities(orgActivities);
+
+      const current = orgActivities.find(a => a.startTime && !a.endTime);
       if (current) {
         setActiveActivityId(current._id);
         setStartTime(new Date(current.startTime));
