@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const uri = "mongodb+srv://cvergarap:CTD2ijZK895nt9u3@actividadesdb.d3r5o.mongodb.net/?retryWrites=true&w=majority&appName=actividadesDB";
+const uri = "mongodb+srv://cvergarap:Company9413@actividadesdb.d3r5o.mongodb.net/";
 
 const connectDB = async () => {
   try {
@@ -10,7 +10,7 @@ const connectDB = async () => {
     });
     console.log("MongoDB connected");
   } catch (err) {
-    console.error("MongoDB connection error:", error);
+    console.error("MongoDB connection error:", err);
     process.exit(1);
   }
 };
