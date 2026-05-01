@@ -11,8 +11,8 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
-
-const API_URL = 'http://localhost:5000';
+import { buildApiUrl } from '../config/api';
+const API_URL = buildApiUrl();
 
 const RegisterScreen = ({ navigation }) => {
   const { setUser } = useContext(AuthContext);

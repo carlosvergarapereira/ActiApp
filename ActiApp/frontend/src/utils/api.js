@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { buildApiUrl } from '../config/api';
 
 const fetchApi = async (url, options = {}) => {
   const token = await AsyncStorage.getItem('token');
@@ -8,7 +9,8 @@ const fetchApi = async (url, options = {}) => {
     ...(token && { Authorization: `Bearer ${token}` }), // Añade el token si existe
   };
 
-  const response = await fetch(url, { ...options, headers });
+  const fullUrl = url.startsWith('http') ? url : buildApiUrl(url);
+  const response = await fetch(fullUrl, { ...options, headers });
 
   if (!response.ok) {
     const errorData = await response.json();

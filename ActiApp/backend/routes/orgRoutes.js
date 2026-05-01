@@ -4,14 +4,9 @@ const Organization = require('../models/Organization');
 const authMiddleware = require('../middleware/authMiddleware');
 const { body, validationResult } = require('express-validator');
 
-// Middleware para verificar rol de admin general - MODIFICACIÓN TEMPORAL
+// Middleware para verificar rol de admin general
 const isAdminGeneral = (req, res, next) => {
-  // Permitir la creación de la organización inicial sin autenticación
-  if (!req.user) { 
-    return next(); // <-- Permite continuar sin autenticación
-  }
-
-  if (req.user.role === 'admin') {
+  if (req.user?.role === 'admin_general') {
     next();
   } else {
     return res.status(403).json({ message: 'No tienes permiso para esta acción' });
@@ -41,10 +36,10 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Crear organización (solo admin general) - MODIFICACIÓN TEMPORAL
+// Crear organización (solo admin general)
 router.post(
   '/',
-  /* authMiddleware,  <--- COMENTA ESTA LÍNEA TEMPORALMENTE */
+  authMiddleware,
   isAdminGeneral,
   [
     body('name').notEmpty().withMessage('El nombre es requerido'),

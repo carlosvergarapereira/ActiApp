@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import moment from 'moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory';
-
-const getBaseUrl = () => Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
+import { getBaseUrl } from '../config/api';
 
 const HistoryScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);

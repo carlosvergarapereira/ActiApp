@@ -5,8 +5,9 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
 import moment from 'moment';
+import { buildApiUrl } from '../config/api';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = buildApiUrl();
 
 const ActivitiesScreen = () => {
   const { user } = useContext(AuthContext);

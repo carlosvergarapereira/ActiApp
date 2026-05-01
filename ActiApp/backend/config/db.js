@@ -1,9 +1,13 @@
 const mongoose = require("mongoose");
 
-const uri = "mongodb+srv://cvergarap:Company9413@actividadesdb.d3r5o.mongodb.net/";
-
 const connectDB = async () => {
   try {
+    const uri = process.env.MONGODB_URI;
+
+    if (!uri) {
+      throw new Error("MONGODB_URI no está definida en variables de entorno");
+    }
+
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

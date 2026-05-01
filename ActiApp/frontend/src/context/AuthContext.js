@@ -2,7 +2,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserProfile } from '../services/authService'; // 🔥 Nuevo servicio que consulta el perfil
-import { Platform } from 'react-native';
 
 export const AuthContext = createContext();
 

@@ -2,9 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
-import { Platform } from 'react-native';
-
-const getBaseUrl = () => Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
+import { getBaseUrl } from '../config/api';
 
 const ConfigScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);

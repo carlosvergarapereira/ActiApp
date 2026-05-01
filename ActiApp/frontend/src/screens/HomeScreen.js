@@ -4,9 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
 import moment from 'moment';
-import { Platform } from 'react-native';
-
-const getBaseUrl = () => Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
+import { getBaseUrl } from '../config/api';
 
 const HomeScreen = ({ navigation }) => {
   const { user, loadingAuth, setUser } = useContext(AuthContext);
